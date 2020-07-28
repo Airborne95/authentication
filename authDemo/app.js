@@ -2,7 +2,7 @@ const express               = require('express'),
       mongoose              = require('mongoose'),
       passport              = require('passport'),
       bodyParser            = require('body-parser'),
-      localStrategy         = require('passport-local'),
+      LocalStrategy         = require('passport-local'),
       passportLocalMongoose = require('passport-local-mongoose'),
       app                   = express(),
       User                  = require('./models/user')
@@ -24,6 +24,7 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(bodyParser.urlencoded({extended: true}))
 
+passport.use(new LocalStrategy(User.authenticate()))
 passport.serializeUser(User.serializeUser())
 passport.deserializeUser(User.deserializeUser())
 
@@ -38,7 +39,7 @@ app.get('/secret', (req, res)=>{
   res.render('secret')
 })
 
-// Auth Routes
+// AUTH ROUTES
 
 // show sign up form
 app.get('/register', (req, res)=>{
@@ -57,6 +58,19 @@ app.post('/register', (req, res)=>{
       res.redirect('/secret')
     })
   })
+})
+
+// LOGIN ROUTES
+
+app.get('/login', (req, res)=> {
+  res.render('login')
+})
+
+app.post('/login', passport.authenticate('local', {
+  successRedirect: '/secret',
+  failureRedirect: '/login'
+}),(req, res) => {
+
 })
 
 app.listen(3000,()=>{
