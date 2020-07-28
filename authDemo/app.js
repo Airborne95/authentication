@@ -14,7 +14,7 @@ mongoose.connect('mongodb://localhost:27017/auth_demoapp', {
 }).catch(err => {console.log(`DB error: ${err}`)})
 
 app.use(require('express-session')({
-  secre: 'the tea nepal is very hot',
+  secret: 'the tea nepal is very hot',
   resave: false,
   saveUninitialized: false
 }))
@@ -22,17 +22,41 @@ app.use(require('express-session')({
 app.set('view engine', 'ejs')
 app.use(passport.initialize())
 app.use(passport.session())
+app.use(bodyParser.urlencoded({extended: true}))
 
 passport.serializeUser(User.serializeUser())
 passport.deserializeUser(User.deserializeUser())
 
-//ROUTES
+// =============
+//    ROUTES
+// =============
 app.get('/', (req, res)=>{
   res.render('home')
 })
 
 app.get('/secret', (req, res)=>{
   res.render('secret')
+})
+
+// Auth Routes
+
+// show sign up form
+app.get('/register', (req, res)=>{
+  res.render('register')
+})
+
+// handle user sign up
+app.post('/register', (req, res)=>{
+  req.body.password
+  User.register(new User({username: req.body.username}), req.body.password, (err, user)=>{
+    if(err){
+      console.log(err)
+      return res.render('register')
+    }
+    passport.authenticate('local')(req, res, ()=>{
+      res.redirect('/secret')
+    })
+  })
 })
 
 app.listen(3000,()=>{
